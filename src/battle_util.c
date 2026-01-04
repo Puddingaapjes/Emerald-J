@@ -2395,7 +2395,7 @@ static enum MoveCanceler CancelerConfused(struct BattleContext *ctx)
         if (gBattleMons[ctx->battlerAtk].volatiles.confusionTurns)
         {
              // confusion dmg
-            if (RandomPercentage(RNG_CONFUSION, (GetGenConfig(GEN_CONFIG_CONFUSION_SELF_DMG_CHANCE) >= GEN_7 ? 33 : 50)))
+            if (RandomPercentage(RNG_CONFUSION, (GetGenConfig(GEN_CONFIG_CONFUSION_SELF_DMG_CHANCE) >= GEN_7 ? 25 : 50)))
             {
                 gBattleCommunication[MULTISTRING_CHOOSER] = TRUE;
                 struct DamageContext dmgCtx = {0};
@@ -2433,7 +2433,7 @@ static enum MoveCanceler CancelerParalyzed(struct BattleContext *ctx)
 {
     if (gBattleMons[ctx->battlerAtk].status1 & STATUS1_PARALYSIS
         && !(B_MAGIC_GUARD == GEN_4 && IsAbilityAndRecord(ctx->battlerAtk, ABILITY_MAGIC_GUARD))
-        && !RandomPercentage(RNG_PARALYSIS, 75))
+        && !RandomPercentage(RNG_PARALYSIS, 80))
     {
         gProtectStructs[ctx->battlerAtk].nonVolatileStatusImmobility = TRUE;
         // This is removed in FRLG and Emerald for some reason
