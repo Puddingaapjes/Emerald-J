@@ -87,27 +87,25 @@ void ApplyMonSpeciesVariantToPaletteBuffer(u32 species, bool8 shiny, u32 PID, u1
 #define DEFAULT_SPECIES_VARIANT \
   {                             \
       PAL1(1, 15),              \
-      HCL1(10, 0, 0, FALSE, HUE_DIR_RANDOM),    \
+      HCL1(0, 0, 0, FALSE, HUE_DIR_RANDOM),    \
   }
 
 static const struct SpeciesVariant gSpeciesVariants[NUM_SPECIES] = 
 {
     [SPECIES_BULBASAUR] = {
         PAL1(2, 5),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
-        PAL2(12,4),
-        HCL2(20, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL1(45, 0, 0, TRUE, HUE_DIR_RANDOM),
     },
     [SPECIES_IVYSAUR] = {
         PAL1(6, 4),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
+        HCL1(45, 0, 5, TRUE, HUE_DIR_RANDOM),
         PAL2(2,4),
-        HCL2(45, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL2(90, 0, 0, TRUE, HUE_DIR_RANDOM),
     },
     [SPECIES_VENUSAUR] = {
         PAL1(1, 4),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
+        HCL1(45, 0, 0, TRUE, HUE_DIR_RANDOM),
         PAL2(5,3),
-        HCL2(45, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL2(90, 0, 0, TRUE, HUE_DIR_RANDOM),
     },
 };
