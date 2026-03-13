@@ -33,6 +33,7 @@ static const u8 sCLTable[4] = {0, 5, 10, 25};
 
 // return variant data or return default if species has no variants.
 const struct SpeciesVariant *GetSpeciesVariants(u32 species);
+const struct SpeciesVariant *GetSpeciesShinyVariants(u32 species);
 
 void ApplyPaletteVariantToPaletteBuffer(u16 pal16[16], const struct PaletteVariant *pv, u16 prn16);
 void ApplyCustomRestrictionToPaletteBuffer(u8 hMin, u8 hMax, u8 cMin, u8 cMax, u8 lMin, u8 lMax, u16 pal16[16]);
@@ -108,4 +109,7 @@ static const struct SpeciesVariant gSpeciesVariants[NUM_SPECIES] =
         PAL2(5,3),
         HCL2(45, 10, 10, TRUE, HUE_DIR_RANDOM),
     },
+};
+static const struct SpeciesVariant gSpeciesShinyVariants[NUM_SPECIES] = 
+{
 };

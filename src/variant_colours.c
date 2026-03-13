@@ -261,6 +261,21 @@ const struct SpeciesVariant *GetSpeciesVariants(u32 species)
   return l;
 }
 
+// return shiny-specific variant data or default if species has no shiny variants.
+const struct SpeciesVariant *GetSpeciesShinyVariants(u32 species)
+{
+  const struct SpeciesVariant *l = &gSpeciesShinyVariants[species];
+
+  if (l->pv1.length == 0 && l->pv2.length == 0 &&
+      l->pv1.hue_amount == 0 && l->pv1.chr_amount == 0 && l->pv1.lum_amount == 0 &&
+      l->pv2.hue_amount == 0 && l->pv2.chr_amount == 0 && l->pv2.lum_amount == 0)
+  {
+    static const struct SpeciesVariant s = DEFAULT_SPECIES_VARIANT;
+    return &s;
+  }
+  return l;
+}
+
 // -------- Core palette application --------
 
 // PRN bit layout (16 bits total):
@@ -356,7 +371,7 @@ void ApplyCustomRestrictionToPaletteBuffer(u8 hMin, u8 hMax, u8 cMin, u8 cMax, u
 
 void ApplyMonSpeciesVariantToPaletteBuffer(u32 species, bool8 shiny, u32 originalPID, u16 pal16[16])
 {
-  const struct SpeciesVariant *sv = GetSpeciesVariants(species);
+  const struct SpeciesVariant *sv = shiny ? GetSpeciesShinyVariants(species) : GetSpeciesVariants(species);
   if (sv == NULL)
     return;
 
