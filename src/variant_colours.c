@@ -282,73 +282,88 @@ const struct SpeciesVariant *GetSpeciesShinyVariants(u32 species)
 // [0..6]=hue, [7..9]=chroma, [10..12]=luma, [13]=downH, [14]=downC, [15]=downL
 void ApplyPaletteVariantToPaletteBuffer(u16 pal16[16], const struct PaletteVariant *pv, u16 prn16)
 {
-  u8 start = pv->start;
-  u8 len = (u8)(pv->length);
-  if (len == 0)
-    return;
+    u8 start = pv->start;
+    u8 len = (u8)(pv->length);
+    if (len == 0)
+        return;
 
-  const u8 hmax = sHueTable[pv->hue_amount & 7u];
-  const u8 cmax = sCLTable[pv->chr_amount & 3u];
-  const u8 lmax = sCLTable[pv->lum_amount & 3u];
+    const u8 hmax = sHueTable[pv->hue_amount & 7u];
+    const u8 cmax = sCLTable[pv->chr_amount & 3u];
+    const u8 lmax = sCLTable[pv->lum_amount & 3u];
 
-  // Nothing to do if variant asks for no change at all
-  if ((hmax | cmax | lmax) == 0)
-    return;
+    // Nothing to do
+    if ((hmax | cmax | lmax) == 0)
+        return;
 
-  u8 iStart = ClampU8(start, 0, 15);
-  u8 iEnd = ClampU8((u16)start + (u16)len, 0, 15);
+    u8 iStart = ClampU8(start, 0, 15);
+    u8 iEnd   = ClampU8((u16)start + (u16)len, 0, 16);
 
-  // Derive shifts/directions from the 16-bit PRN
-  u32 rnd = (u32)prn16;
-  u8 hueShift8 = ScaleToRange(BITS(rnd, 0, 7), 0, hmax, 7);
-  u8 chrAmtPct = ScaleToRange(BITS(rnd, 7, 3), 0, cmax, 3);
-  u8 lumAmtPct = ScaleToRange(BITS(rnd, 10, 3), 0, lmax, 3);
-  u8 downH;
-  switch (pv->hue_direction)
-  {
-  case HUE_DIR_UP:
-    downH = 0; // always add
-    break;
-  case HUE_DIR_DOWN:
-    downH = 1; // always subtract
-    break;
-  default: // HUE_DIR_RANDOM
-    downH = (u8)BITS(rnd, 13, 1);
-    break;
-  }
-  u8 downC = (u8)BITS(rnd, 14, 1);
-  u8 downL = (u8)BITS(rnd, 15, 1);
+    u32 rnd = (u32)prn16;
 
-  // Compute signed deltas for C and L; amplify when down-only
-  u8 cDelta = chrAmtPct;
-  u8 lDelta = lumAmtPct;
-  if (pv->sv_down_only)
-  {
-    cDelta = (u8)(2 * cDelta);
-    lDelta = (u8)(2 * lDelta);
-  }
+    // Fast index generation (no modulo)
+    u8 hueIdx = (BITS(rnd, 0, 5) * 5) >> 5;   // 0..4
+    u8 chrIdx = (BITS(rnd, 7, 3) * 3) >> 3;   // 0..2
+    u8 lumIdx = (BITS(rnd,10, 3) * 3) >> 3;   // 0..2
 
-  for (u8 i = iStart; i < iEnd; ++i)
-  {
-    u8 r5, g5, b5, h, c, l;
-    Rgb555Unpack(pal16[i], &r5, &g5, &b5);
-    Rgb5ToOklch(r5, g5, b5, &l, &c, &h);
+    // Hue delta computation
+    s8 hueDelta = 0;
 
-    h = downH ? (u8)(h - hueShift8) : (u8)(h + hueShift8);
+    switch (pv->hue_direction)
+    {
+    case HUE_DIR_UP:
+        hueDelta = (hueIdx * hmax) >> 2;        // 0..+hmax
+        break;
 
-    if (pv->sv_down_only || downC)
-      c = cDelta > c ? 0 : (u8)(c - cDelta);
-    else
-      c = (u8)(c + cDelta);
+    case HUE_DIR_DOWN:
+        hueDelta = -((hueIdx * hmax) >> 2);     // 0..-hmax
+        break;
 
-    if (pv->sv_down_only || downL)
-      l = lDelta > l ? 0 : (u8)(l - lDelta);
-    else
-      l = (u8)((255 - lDelta < l) ? 255 : (l + lDelta));
+    default: // HUE_DIR_CENTER
+        hueDelta = ((s8)hueIdx - 2) * (hmax >> 1); // -hmax..+hmax
+        break;
+    }
 
-    OklchToRgb5(l, c, h, &r5, &g5, &b5);
-    pal16[i] = Rgb555Pack(r5, g5, b5);
-  }
+    // Scale chroma/luma amounts
+    u8 chrAmtPct = (chrIdx * cmax) / 2;
+    u8 lumAmtPct = (lumIdx * lmax) / 2;
+
+    u8 downC = (u8)BITS(rnd, 14, 1);
+    u8 downL = (u8)BITS(rnd, 15, 1);
+
+    u8 cDelta = chrAmtPct;
+    u8 lDelta = lumAmtPct;
+
+    if (pv->sv_down_only)
+    {
+        cDelta <<= 1;
+        lDelta <<= 1;
+    }
+
+    for (u8 i = iStart; i < iEnd; ++i)
+    {
+        u8 r5, g5, b5, h, c, l;
+
+        Rgb555Unpack(pal16[i], &r5, &g5, &b5);
+        Rgb5ToOklch(r5, g5, b5, &l, &c, &h);
+
+        // Apply hue shift
+        h = (u8)(h + hueDelta);
+
+        // Chroma
+        if (pv->sv_down_only || downC)
+            c = (cDelta > c) ? 0 : (u8)(c - cDelta);
+        else
+            c = (u8)(c + cDelta);
+
+        // Luma
+        if (pv->sv_down_only || downL)
+            l = (lDelta > l) ? 0 : (u8)(l - lDelta);
+        else
+            l = (u8)((255 - lDelta < l) ? 255 : (l + lDelta));
+
+        OklchToRgb5(l, c, h, &r5, &g5, &b5);
+        pal16[i] = Rgb555Pack(r5, g5, b5);
+    }
 }
 
 void ApplyCustomRestrictionToPaletteBuffer(u8 hMin, u8 hMax, u8 cMin, u8 cMax, u8 lMin, u8 lMax, u16 pal16[16])
