@@ -93,23 +93,53 @@ static const struct SpeciesVariant gSpeciesVariants[NUM_SPECIES] =
 {
     [SPECIES_BULBASAUR] = {
         PAL1(2, 5),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
-        PAL2(12,4),
-        HCL2(20, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL1(45, 0, 0, TRUE, HUE_DIR_RANDOM),
     },
     [SPECIES_IVYSAUR] = {
         PAL1(6, 4),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
-        PAL2(2,4),
-        HCL2(45, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL1(45, 0, 5, TRUE, HUE_DIR_RANDOM),
     },
     [SPECIES_VENUSAUR] = {
         PAL1(1, 4),
-        HCL1(60, 0, 5, TRUE, HUE_DIR_DOWN),
-        PAL2(5,3),
-        HCL2(45, 10, 10, TRUE, HUE_DIR_RANDOM),
+        HCL1(45, 0, 0, TRUE, HUE_DIR_RANDOM),
+    },
+    [SPECIES_CHARMANDER] = {
+        PAL1(6, 4),
+        HCL1(30, 0, 10, TRUE, HUE_DIR_RANDOM),
+    },
+    [SPECIES_CHARMELEON] = {
+        PAL1(4, 4),
+        HCL1(20, 0, 0, TRUE, HUE_DIR_DOWN),
+    },
+    [SPECIES_CHARIZARD] = {
+        PAL1(5, 5),
+        HCL1(30, 0, 10, TRUE, HUE_DIR_RANDOM),
+    },
+    [SPECIES_SQUIRTLE] = {
+        PAL1(11, 5),
+        HCL1(30, 0, 0, TRUE, HUE_DIR_UP),
+    },
+    [SPECIES_WARTORTLE] = {
+        PAL1(6, 4),
+        HCL1(30, 0, 0, TRUE, HUE_DIR_UP),
+    },
+    [SPECIES_BLASTOISE] = {
+        PAL1(1, 4),
+        HCL1(30, 0, 0, TRUE, HUE_DIR_UP),
     },
 };
 static const struct SpeciesVariant gSpeciesShinyVariants[NUM_SPECIES] = 
 {
+  [SPECIES_CHARMANDER] = {
+    PAL1(9, 6),
+    HCL1(180, 0, 0, TRUE, HUE_DIR_RANDOM),
+  },
+  [SPECIES_CHARMELEON] = {
+    PAL1(13, 3),
+    HCL1(180, 0, 0, TRUE, HUE_DIR_RANDOM),
+  },
+  [SPECIES_CHARIZARD] = {
+    PAL1(10, 6),
+    HCL1(180, 0, 0, TRUE, HUE_DIR_RANDOM),
+  },
 };
