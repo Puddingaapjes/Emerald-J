@@ -2180,15 +2180,10 @@ static enum MoveCanceler CancelerAsleepOrFrozen(struct BattleContext *ctx)
         }
         else
         {
-            u8 toSub;
-            if (IsAbilityAndRecord(ctx->battlerAtk, ABILITY_EARLY_BIRD))
-                toSub = 2;
-            else
-                toSub = 1;
-            if ((gBattleMons[ctx->battlerAtk].status1 & STATUS1_SLEEP) < toSub)
+            if ((gBattleMons[ctx->battlerAtk].status1 & STATUS1_SLEEP) < 1)
                 gBattleMons[ctx->battlerAtk].status1 &= ~STATUS1_SLEEP;
             else
-                gBattleMons[ctx->battlerAtk].status1 -= toSub;
+                gBattleMons[ctx->battlerAtk].status1 -= 1;
 
             enum BattleMoveEffects moveEffect = GetMoveEffect(ctx->currentMove);
             if (gBattleMons[ctx->battlerAtk].status1 & STATUS1_SLEEP)
@@ -6404,7 +6399,7 @@ bool32 CanSetNonVolatileStatus(u32 battlerAtk, u32 battlerDef, enum MoveEffect e
     case MOVE_EFFECT_POISON:
     case MOVE_EFFECT_TOXIC:
 
-        if (gBattleMons[battlerDef].status1 & (STATUS1_POISON | STATUS1_TOXIC_POISON))
+        if (gBattleMons[battlerDef].status1 & (STATUS1_TOXIC_POISON))
         {
             battleScript = BattleScript_AlreadyPoisoned;
         }
@@ -6589,7 +6584,15 @@ bool32 CanSetNonVolatileStatus(u32 battlerAtk, u32 battlerDef, enum MoveEffect e
     }
     else if (gBattleMons[battlerDef].status1 & STATUS1_ANY)
     {
+        if ((effect == MOVE_EFFECT_POISON || effect == MOVE_EFFECT_TOXIC)
+        && (gBattleMons[battlerDef].status1 & STATUS1_POISON)
+        && !(gBattleMons[battlerDef].status1 & STATUS1_TOXIC_POISON))
+        {
+        }
+        else
+        {
         battleScript = BattleScript_ButItFailed;
+        }
     }
 
     if (IsNonVolatileStatusBlocked(battlerDef, abilityDef, abilityAffected, battleScript, option))
@@ -8448,6 +8451,15 @@ static inline uq4_12_t GetBurnOrFrostBiteModifier(struct DamageContext *ctx)
     return UQ_4_12(1.0);
 }
 
+static inline uq4_12_t GetSleepModifier(struct DamageContext *ctx)
+{
+    
+    if (gBattleMons[ctx->battlerDef].status1 & STATUS1_SLEEP
+        && !BattlerHasTrait(ctx->battlerDef, ABILITY_COMATOSE))
+        return UQ_4_12(1.2);
+    return UQ_4_12(1.0);
+}
+
 static inline uq4_12_t GetCriticalModifier(bool32 isCrit)
 {
     if (isCrit)
@@ -8768,6 +8780,7 @@ s32 ApplyModifiersAfterDmgRoll(struct DamageContext *ctx, s32 dmg)
         DAMAGE_APPLY_MODIFIER(GetSameTypeAttackBonusModifier(ctx));
     DAMAGE_APPLY_MODIFIER(ctx->typeEffectivenessModifier);
     DAMAGE_APPLY_MODIFIER(GetBurnOrFrostBiteModifier(ctx));
+    DAMAGE_APPLY_MODIFIER(GetSleepModifier(ctx));
     DAMAGE_APPLY_MODIFIER(GetZMaxMoveAgainstProtectionModifier(ctx));
     DAMAGE_APPLY_MODIFIER(GetOtherModifiers(ctx));
 
@@ -11282,6 +11295,11 @@ u32 GetTotalAccuracy(u32 battlerAtk, u32 battlerDef, u32 move, enum HoldEffect a
     if (SearchTraits(battlerTraits, ABILITY_TANGLED_FEET))
         if (gBattleMons[battlerDef].volatiles.confusionTurns)
             calc = (calc * 50) / 100; // 1.5 tangled feet loss
+
+    //Target's status
+    if (gBattleMons[battlerDef].status1 & STATUS1_SLEEP
+    && !BattlerHasTrait(battlerDef, ABILITY_COMATOSE))
+            calc = (calc * 80) / 100;
 
     // Attacker's ally's ability
     u32 atkAlly = BATTLE_PARTNER(battlerAtk);

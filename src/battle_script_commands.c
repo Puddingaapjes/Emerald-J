@@ -2982,6 +2982,12 @@ static inline bool32 TrySetLightScreen(u32 battler)
 static void SetNonVolatileStatus(u32 effectBattler, enum MoveEffect effect, const u8 *battleScript, enum StatusTrigger trigger)
 {
     gEffectBattler = effectBattler;
+   
+    if (effect == MOVE_EFFECT_POISON
+     && (gBattleMons[effectBattler].status1 & STATUS1_POISON))
+    {
+    effect = MOVE_EFFECT_TOXIC;
+    }
 
     if (effect == MOVE_EFFECT_SLEEP
      || effect == MOVE_EFFECT_FREEZE)
@@ -3023,6 +3029,16 @@ static void SetNonVolatileStatus(u32 effectBattler, enum MoveEffect effect, cons
         gBattlescriptCurrInstr = BattleScript_MoveEffectParalysis;
         break;
     case MOVE_EFFECT_TOXIC:
+        if (gBattleMons[effectBattler].status1 & STATUS1_POISON)
+        {        
+            gBattleMons[effectBattler].status1 &= ~STATUS1_POISON;
+            gBattleMons[effectBattler].status1 |= STATUS1_TOXIC_TURN(1);
+        }
+        else
+        {
+            gBattleMons[effectBattler].status1 &= ~STATUS1_POISON;
+            gBattleMons[effectBattler].status1 |= STATUS1_TOXIC_TURN(0);
+        }
         gBattleMons[effectBattler].status1 |= STATUS1_TOXIC_POISON;
         gBattlescriptCurrInstr = BattleScript_MoveEffectToxic;
         break;
