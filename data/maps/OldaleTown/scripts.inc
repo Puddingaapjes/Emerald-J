@@ -1,19 +1,14 @@
 OldaleTown_MapScripts::
 	map_script MAP_SCRIPT_ON_TRANSITION, OldaleTown_OnTransition
+	map_script MAP_SCRIPT_ON_FRAME_TABLE, OldaleTown_OnFrame
 	.byte 0
 
 OldaleTown_OnTransition:
-	call Common_EventScript_SetupRivalGfxId
 	setflag FLAG_VISITED_OLDALE_TOWN
 	call_if_unset FLAG_ADVENTURE_STARTED, OldaleTown_EventScript_BlockWestEntrance
 	call_if_unset FLAG_RECEIVED_POTION_OLDALE, OldaleTown_EventScript_MoveMartEmployee
-	call_if_set FLAG_ADVENTURE_STARTED, OldaleTown_EventScript_SetOldaleState
 	end
 
-@ This script seems pointless because nothing uses VAR_OLDALE_TOWN_STATE
-OldaleTown_EventScript_SetOldaleState::
-	setvar VAR_OLDALE_TOWN_STATE, 1
-	return
 
 OldaleTown_EventScript_BlockWestEntrance::
 	setobjectxyperm LOCALID_FOOTPRINTS_MAN, 1, 11
@@ -24,6 +19,92 @@ OldaleTown_EventScript_MoveMartEmployee::
 	setobjectxyperm LOCALID_OLDALE_MART_EMPLOYEE, 13, 14
 	setobjectmovementtype LOCALID_OLDALE_MART_EMPLOYEE, MOVEMENT_TYPE_FACE_DOWN
 	return
+
+OldaleTown_OnFrame:
+	map_script_2 VAR_OLDALE_TOWN_STATE, 1, OldaleTown_EventScript_StepOffTruck
+	.2byte 0
+
+OldaleTown_EventScript_StepOffTruck::
+	lockall
+	setvar VAR_0x8004, 15
+	setvar VAR_0x8005, 16
+	call OldaleTown_EventScript_GoInsideWithMom
+	setflag FLAG_HIDE_OLDALE_TOWN_TRUCK
+	warpsilent MAP_OLDALE_TOWN_PLAYER_HOUSE, 8, 8
+	waitstate
+	releaseall
+	end
+
+	OldaleTown_EventScript_GoInsideWithMom::
+	delay 15
+	playse SE_LEDGE
+	applymovement LOCALID_PLAYER, OldaleTown_Movement_PlayerStepOffTruck
+	waitmovement 0
+	opendoor VAR_0x8004, VAR_0x8005
+	waitdooranim
+	addobject LOCALID_OLDALE_MOM
+	applymovement LOCALID_OLDALE_MOM, OldaleTown_Movement_MomExitHouse
+	waitmovement 0
+	closedoor VAR_0x8004, VAR_0x8005
+	waitdooranim
+	delay 10
+	applymovement LOCALID_OLDALE_MOM, OldaleTown_Movement_MomApproachPlayerAtTruck
+	waitmovement 0
+	msgbox OldaleTown_Text_OurNewHomeLetsGoInside, MSGBOX_DEFAULT
+	closemessage
+	applymovement LOCALID_OLDALE_MOM, OldaleTown_Movement_MomApproachDoor
+	applymovement LOCALID_PLAYER, OldaleTown_Movement_PlayerApproachDoor
+	waitmovement 0
+	opendoor VAR_0x8004, VAR_0x8005
+	waitdooranim
+	applymovement LOCALID_OLDALE_MOM, OldaleTown_Movement_MomEnterHouse
+	applymovement LOCALID_PLAYER, OldaleTown_Movement_PlayerEnterHouse
+	waitmovement 0
+	setflag FLAG_HIDE_OLDALE_TOWN_MOM
+	hideplayer
+	closedoor VAR_0x8004, VAR_0x8005
+	waitdooranim
+	clearflag FLAG_HIDE_MAP_NAME_POPUP
+	return
+
+OldaleTown_Movement_MomExitHouse:
+	walk_down
+	step_end
+
+OldaleTown_Movement_MomApproachPlayerAtTruck:
+	walk_down
+	walk_in_place_faster_left
+	step_end
+
+OldaleTown_Movement_MomApproachDoor:
+	delay_16
+	delay_8
+	walk_up
+	step_end
+
+OldaleTown_Movement_MomEnterHouse:
+	walk_up
+	set_invisible
+	step_end
+
+OldaleTown_Movement_PlayerApproachDoor:
+	delay_16
+	delay_8
+	walk_right
+	walk_in_place_faster_up
+	step_end
+
+OldaleTown_Movement_PlayerEnterHouse:
+	walk_up
+	walk_up
+	step_end
+
+OldaleTown_Movement_PlayerStepOffTruck:
+	jump_right
+	delay_16
+	delay_16
+	delay_16
+	step_end
 
 OldaleTown_EventScript_TownSign::
 	msgbox OldaleTown_Text_TownSign, MSGBOX_SIGN
@@ -395,3 +476,15 @@ OldaleTown_Text_TownSign:
 	.string "OLDALE TOWN\n"
 	.string "“Where things start off scarce.”$"
 
+
+OldaleTown_Text_OurNewHomeLetsGoInside:
+	.string "MOM: {PLAYER}, we're here, honey!\p"
+	.string "It must be tiring riding with our things\n"
+	.string "in the moving truck.\p"
+	.string "Well, this is Oldale town.\p"
+	.string "How do you like it?\n"
+	.string "This is our new home!\p"
+	.string "It has a quaint feel, but it seems to be\n"
+	.string "an easy place to live, don't you think?\p"
+	.string "And, you get your own room, {PLAYER}!\n"
+	.string "Let's go inside.$"

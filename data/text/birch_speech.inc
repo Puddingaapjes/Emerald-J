@@ -32,8 +32,7 @@ gText_Birch_AndYouAre::
 	.string "And you are?$"
 
 gText_Birch_BoyOrGirl::
-	.string "Are you a boy?\n"
-	.string "Or are you a girl?$"
+	.string "What do you look like?$"
 
 gText_Birch_WhatsYourName::
 	.string "All right.\n"
@@ -44,8 +43,8 @@ gText_Birch_SoItsPlayer::
 
 gText_Birch_YourePlayer::
 	.string "Ah, okay!\p"
-	.string "You're {PLAYER}{KUN} who's moving to my\n"
-	.string "hometown of LITTLEROOT.\l"
+	.string "You're {PLAYER}{KUN} who's moving to the\n"
+	.string "town of Oldale.\l"
 	.string "I get it now!\p"
 	.string "$"
 
@@ -57,5 +56,5 @@ gText_Birch_AreYouReady::
 	.string "world of POKéMON where dreams,\l"
 	.string "adventure, and friendships await!\p"
 	.string "Well, I'll be expecting you later.\n"
-	.string "Come see me in my POKéMON LAB.\p"
-	.string "$"
+	.string "Come see me in my POKéMON LAB\l"
+	.string "you can find in Littleroot.$"
